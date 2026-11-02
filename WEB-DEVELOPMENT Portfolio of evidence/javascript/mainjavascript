@@ -1,0 +1,146 @@
+document.addEventListener('DOMContentLoaded', () => {
+
+    const navLinks = document.querySelector('.nav-links');
+    const navbar = document.querySelector('.navbar');
+
+    if (navbar && !document.querySelector('.mobile-toggle')) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.classList.add('mobile-toggle');
+        toggleBtn.setAttribute('aria-label', 'Toggle Navigation');
+        toggleBtn.innerHTML = '&#9776; Menu';
+        toggleBtn.style.cssText = 'background: var(--secondary-gold); color: var(--primary-navy); border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; display: none;';
+
+        navbar.insertBefore(toggleBtn, navLinks);
+
+        toggleBtn.addEventListener('click', () => {
+            if (navLinks.style.display === 'flex' || navLinks.style.display === 'block') {
+                navLinks.style.display = 'none';
+            } else {
+                navLinks.style.display = 'flex';
+                navLinks.style.flexDirection = 'column';
+                navLinks.style.width = '100%';
+            }
+        });
+
+        const handleResize = () => {
+            if (window.innerWidth <= 600) {
+                toggleBtn.style.display = 'block';
+                navLinks.style.display = 'none';
+            } else {
+                toggleBtn.style.display = 'none';
+                navLinks.style.display = 'flex';
+                navLinks.style.flexDirection = 'row';
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        handleResize();
+    }
+
+    const enquiryForm = document.querySelector('form[action*="enquiry"], main form');
+    const isEnquiryPage = window.location.pathname.includes('enquires') || document.title.includes('Enquiries');
+
+    if (enquiryForm && isEnquiryPage) {
+        enquiryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            clearFeedback(enquiryForm);
+
+            const nameInput = enquiryForm.querySelector('input[type="text"]');
+            const emailInput = enquiryForm.querySelector('input[type="email"]');
+            const categorySelect = enquiryForm.querySelector('select');
+            const messageInput = enquiryForm.querySelector('textarea');
+
+            let isValid = true;
+
+            if (!nameInput.value.trim() || nameInput.value.trim().length < 2) {
+                showFieldError(nameInput, 'Please enter a valid full name (minimum 2 characters).');
+                isValid = false;
+            }
+
+            if (!emailInput.value.trim() || !validateEmail(emailInput.value.trim())) {
+                showFieldError(emailInput, 'Please enter a valid email address (e.g. user@domain.com).');
+                isValid = false;
+            }
+
+            if (!messageInput.value.trim() || messageInput.value.trim().length < 10) {
+                showFieldError(messageInput, 'Please enter a detailed message (minimum 10 characters).');
+                isValid = false;
+            }
+
+            if (isValid) {
+                const category = categorySelect ? categorySelect.value : 'Small Business Client';
+                const successMsg = `Thank you, ${nameInput.value.trim()}! Your enquiry for [${category}] has been successfully received. A representative from Ndzalo Ra Rhulani NPC will contact you shortly via ${emailInput.value.trim()}.`;
+
+                showFormSuccess(enquiryForm, successMsg);
+                enquiryForm.reset();
+            }
+        });
+    }
+
+    const isContactPage = window.location.pathname.includes('contact') || document.title.includes('Contact');
+
+    if (enquiryForm && isContactPage) {
+        enquiryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            clearFeedback(enquiryForm);
+
+            const nameInput = enquiryForm.querySelector('input[type="text"]');
+            const emailInput = enquiryForm.querySelector('input[type="email"]');
+            const messageInput = enquiryForm.querySelector('textarea');
+
+            let isValid = true;
+
+            if (!nameInput.value.trim() || nameInput.value.trim().length < 2) {
+                showFieldError(nameInput, 'Please provide your name.');
+                isValid = false;
+            }
+
+            if (!emailInput.value.trim() || !validateEmail(emailInput.value.trim())) {
+                showFieldError(emailInput, 'Please enter a valid email address.');
+                isValid = false;
+            }
+
+            if (!messageInput.value.trim()) {
+                showFieldError(messageInput, 'Message field cannot be empty.');
+                isValid = false;
+            }
+
+            if (isValid) {
+                const successMsg = `Message Sent! Thank you ${nameInput.value.trim()}. Your message has been routed to info@ndzalorarhulani.org.za. We will respond within 24–48 hours.`;
+                showFormSuccess(enquiryForm, successMsg);
+                enquiryForm.reset();
+            }
+        });
+    }
+
+    function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    }
+
+    function showFieldError(inputElement, errorMessage) {
+        inputElement.style.borderColor = '#DC2626';
+        const errDiv = document.createElement('div');
+        errDiv.className = 'error-feedback';
+        errDiv.style.cssText = 'color: #DC2626; font-size: 0.85rem; margin-top: 0.25rem; font-weight: 600;';
+        errDiv.innerText = errorMessage;
+        inputElement.parentNode.appendChild(errDiv);
+    }
+
+    function clearFeedback(form) {
+        form.querySelectorAll('.error-feedback, .success-feedback').forEach(el => el.remove());
+        form.querySelectorAll('input, textarea, select').forEach(input => {
+            input.style.borderColor = '#E5E7EB';
+        });
+    }
+
+    function showFormSuccess(form, message) {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'success-feedback';
+        successDiv.style.cssText = 'background-color: #D1FAE5; color: #065F46; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; border: 1px solid #10B981; font-weight: 600;';
+        successDiv.innerText = message;
+        form.insertBefore(successDiv, form.firstChild);
+    }
+});
